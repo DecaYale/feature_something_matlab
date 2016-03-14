@@ -1,6 +1,6 @@
 clc
 close all;
-img = imread('data\scene1.row3.col3.ppm');
+img = imread('data\test.jpg');%imread('data\scene1.row3.col3.ppm');
 img = rgb2gray(img);
 imshow(img);
 hold on;

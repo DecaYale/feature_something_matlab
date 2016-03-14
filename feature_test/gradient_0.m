@@ -1,5 +1,7 @@
 function [px_,py_] = gradient_0(img,s)
 %0度梯度，s是步长
+img =  double(img);
+
 rows= size(img,1);
 cols = size(img,2);
 px_ = zeros(rows,cols);

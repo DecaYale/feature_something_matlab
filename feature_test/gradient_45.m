@@ -1,6 +1,7 @@
 
 function [px_,py_] = gradient_45(img,s)
 %45度梯度，s是步长
+img =  double(img);
 rows= size(img,1);
 cols = size(img,2);
 px_ = zeros(rows,cols);
