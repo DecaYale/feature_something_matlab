@@ -17,7 +17,7 @@ s = 1;  %步长
 MagThresh = 20;
 SimThresh = 0.7*MagThresh;
 xDiffThresh = 40;
-
+tic;
 %% 提取特征点
 fea_xL = [];
 fea_yL = [];
@@ -74,27 +74,32 @@ end
 
 
 
-%
-winSize = 3; % odd 
-halfWinSize = int32(winSize) / 2 ;
+%交叉匹配 未加peak ratio
+winSize = 5; % odd 
+winArea = winSize*winSize;
+halfWinSize = floor(winSize / 2 );
 pair = [];
 for y = 1:size(fea_list_L,1)
     
      if (y<=halfWinSize || y>imgH - halfWinSize || x<=halfWinSize || x >imgW - halfWinSize ) 
           continue;
      end
-           
+     if (isempty(fea_list_L{y}) || isempty(fea_list_R{y}) )
+        continue;
+     end
+     
+   dist = [];%注意清空
    for i = 1:length(fea_list_L{y}) 
        xL = fea_list_L{y}(i);
        for j = 1:length(fea_list_R{y})
            xR= fea_list_R{y}(j);
           
-           SAD = imgL(y-halfWinSize:y+halfWinSize,xL-halfWinSize:xL+halfWinSize) - ...
-                    imgR(y-halfWinSize:y+halfWinSize,xR-halfWinSize:xR+halfWinSize);
+           SAD = double( imgL(y-halfWinSize:y+halfWinSize,xL-halfWinSize:xL+halfWinSize) ) - ...
+                    double( imgR(y-halfWinSize:y+halfWinSize,xR-halfWinSize:xR+halfWinSize) );
                 
            SAD = sum(sum( abs(SAD) ));
             
-           dist(i,j) = SAD;
+           dist(i,j) = SAD/winArea;
            
           %{ 
            SAD = 0;
@@ -114,12 +119,21 @@ for y = 1:size(fea_list_L,1)
     % 排序，并且选出交叉验证
         [L_R,I_lr] = sort(dist,2);
         [R_L,I_rl] = sort(dist,1);
-        for i = 1:1:length(fea_list_L{y})
-            if ( I_rl(1,I_lr(i,1)) == fea_list_L{y}(i) )  %%%%
+        for i = 1:length(fea_list_L{y})
+            if ( I_rl(1,I_lr(i,1)) == i)  %%%% && L_R(i,1)<6
                pair = [pair; fea_list_L{y}(i),y, fea_list_R{y}(I_lr(i,1)), y];
             end
         end
         
- end
+end
+ toc;
+twoImg = [imgL,imgR];
+figure;
+imshow(twoImg);
+hold on;
+for i=1:10:size(pair,1)
+        plot([pair(i,1),pair(i,3)+imgW], [pair(i,2),pair(i,4)],'.');
+      plot([pair(i,1),pair(i,3)+imgW], [pair(i,2),pair(i,4)],'-');
+end
     
 

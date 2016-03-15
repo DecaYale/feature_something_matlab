@@ -74,19 +74,25 @@ end
 
 
 
-%
+%交叉匹配 未加peak ratio
 winSize = 3; % odd 
 halfWinSize = int32(winSize) / 2 ;
 pair = [];
 for y = 1:size(fea_list_L,1)
-
+    
+     if (y<=halfWinSize || y>imgH - halfWinSize || x<=halfWinSize || x >imgW - halfWinSize ) 
+          continue;
+     end
+     if (isempty(fea_list_L{y}) || isempty(fea_list_R{y}) )
+        continue;
+     end
+     
+   dist = [];%注意清空
    for i = 1:length(fea_list_L{y}) 
        xL = fea_list_L{y}(i);
        for j = 1:length(fea_list_R{y})
            xR= fea_list_R{y}(j);
-           if (y<=halfWinSize || y>imgH - halfWinSize || x<=halfWinSize || x >imgW - halfWinSize ) 
-               continue;
-           end
+          
            SAD = imgL(y-halfWinSize:y+halfWinSize,xL-halfWinSize:xL+halfWinSize) - ...
                     imgR(y-halfWinSize:y+halfWinSize,xR-halfWinSize:xR+halfWinSize);
                 
@@ -112,12 +118,20 @@ for y = 1:size(fea_list_L,1)
     % 排序，并且选出交叉验证
         [L_R,I_lr] = sort(dist,2);
         [R_L,I_rl] = sort(dist,1);
-        for i = 1:1:length(fea_list_L{y})
-            if ( I_rl(1,I_lr(i,1)) == fea_list_L{y}(i) )  %%%%
+        for i = 1:length(fea_list_L{y})
+            if ( I_rl(1,I_lr(i,1)) == i )  %%%%
                pair = [pair; fea_list_L{y}(i),y, fea_list_R{y}(I_lr(i,1)), y];
             end
         end
         
- end
+end
+ 
+twoImg = [imgL,imgR];
+figure;
+hold on;
+imshow(twoImg);
+for i=1:size(pair,2)
+    
+end
     
 
