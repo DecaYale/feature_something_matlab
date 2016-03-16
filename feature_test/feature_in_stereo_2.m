@@ -1,10 +1,10 @@
 clc
 clear
 close all;
-imgL =imread('data\scene1.row3.col3.ppm');% imread('data\test.jpg');%imread('data\scene1.row3.col3.ppm');
+imgL =imread('data\view1_half.png');%imread('data\scene1.row3.col3.ppm');% imread('data\test.jpg');%imread('data\scene1.row3.col3.ppm');
 imgL = rgb2gray(imgL);
 
-imgR =imread('data\scene1.row3.col4.ppm');% imread('data\test.jpg');%imread('data\scene1.row3.col3.ppm');
+imgR =imread('data\view5_half.png');%imread('data\scene1.row3.col4.ppm');% imread('data\test.jpg');%imread('data\scene1.row3.col3.ppm');
 imgR = rgb2gray(imgR);
 
 
@@ -58,14 +58,14 @@ plot(fea_xR,fea_yR,'r.');
 imgH = size(imgL,1);
 imgW = size(imgL,2);
 
-fea_list_L = cell(length(fea_xL), 1);
+fea_list_L = cell(imgH, 1);%fea_list_L = cell(length(fea_xL), 1);
 for i=1:length(fea_xL)
     x = fea_xL(i);
     y = fea_yL(i);
     fea_list_L{y} = [fea_list_L{y},x];
 end
 
-fea_list_R = cell(length(fea_xR), 1);
+fea_list_R = cell(imgH, 1);%fea_list_R = cell(length(fea_xR), 1);
 for i=1:length(fea_xR)
     x = fea_xR(i);
     y = fea_yR(i);
@@ -81,7 +81,7 @@ halfWinSize = floor(winSize / 2 );
 pair = [];
 for y = 1:size(fea_list_L,1)
     
-     if (y<=halfWinSize || y>imgH - halfWinSize || x<=halfWinSize || x >imgW - halfWinSize ) 
+     if (y<=halfWinSize || y>imgH - halfWinSize )%|| x<=halfWinSize || x >imgW - halfWinSize ) 
           continue;
      end
      if (isempty(fea_list_L{y}) || isempty(fea_list_R{y}) )
@@ -91,9 +91,12 @@ for y = 1:size(fea_list_L,1)
    dist = [];%注意清空
    for i = 1:length(fea_list_L{y}) 
        xL = fea_list_L{y}(i);
+       
        for j = 1:length(fea_list_R{y})
            xR= fea_list_R{y}(j);
-          
+          if(xL<=halfWinSize || xL>imgW-halfWinSize || xR<=halfWinSize || xR > imgW-halfWinSize) 
+              continue;
+          end
            SAD = double( imgL(y-halfWinSize:y+halfWinSize,xL-halfWinSize:xL+halfWinSize) ) - ...
                     double( imgR(y-halfWinSize:y+halfWinSize,xR-halfWinSize:xR+halfWinSize) );
                 
@@ -119,8 +122,8 @@ for y = 1:size(fea_list_L,1)
     % 排序，并且选出交叉验证
         [L_R,I_lr] = sort(dist,2);
         [R_L,I_rl] = sort(dist,1);
-        for i = 1:length(fea_list_L{y})
-            if ( I_rl(1,I_lr(i,1)) == i)  %%%% && L_R(i,1)<6
+        for i = 1:size(dist,1)%for i = 1:length(fea_list_L{y})
+            if ( I_rl(1,I_lr(i,1)) == i)  %%%% && L_R(i,1)<6 &&  L_R(i,1)<10
                pair = [pair; fea_list_L{y}(i),y, fea_list_R{y}(I_lr(i,1)), y];
             end
         end
@@ -131,7 +134,7 @@ twoImg = [imgL,imgR];
 figure;
 imshow(twoImg);
 hold on;
-for i=1:10:size(pair,1)
+for i=1:5:size(pair,1)
         plot([pair(i,1),pair(i,3)+imgW], [pair(i,2),pair(i,4)],'.');
       plot([pair(i,1),pair(i,3)+imgW], [pair(i,2),pair(i,4)],'-');
 end
